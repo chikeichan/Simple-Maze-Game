@@ -1,0 +1,605 @@
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Simple Maze Game</title>
+    <style>
+      td {
+        text-align:center;
+        height: 20px;
+        width: 20px;
+      }
+      div{
+        height:50px;
+        width:80px;
+        border-radius: 15px;
+        text-align:center;
+        background-color:#0033CC;
+        vertical-align:middle;
+        position: relative;
+        display:inline-block;
+        }
+      
+    </style>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js">
+    </script>
+    <script>
+      var maze = ["J     $   ",
+                  "          ",
+                  "  #       ",
+                  "    $     ",
+                  "      #   ",
+                  "  $       ",
+                  "          ",
+                  "    #     ",
+                  "          ",
+                  "#        M"];
+      var Mcoor = [];
+      var Bcoor = [];
+      var Dcoor = [];
+      var Jcoor = [];
+      var Ecoor = [];
+      var Points = 0;
+      
+      //to plot coordinate [arr] with "str"
+      function plotMaze(arr,str) {    
+        for(i=0;i<arr.length;i++) {
+          var coor = '#'+arr[i][0]+'x>#'+arr[i][1]+'c';  
+            $(coor).html(str);
+        }
+      };
+      
+      //to analyze maze array for maze making
+      function findALL() {
+        for(i=1;i<=10;i++) {
+            for(j=1;j<=10;j++) {
+              if(maze[i-1].charAt(j-1)=="#") {
+                Bcoor.push([i,j]);
+              } else if(maze[i-1].charAt(j-1)=="$") {
+                Dcoor.push([i,j]);
+              } else if(maze[i-1].charAt(j-1)=="M") {
+                Mcoor.push([i,j]);
+              } else if(maze[i-1].charAt(j-1)=="J") {
+                Jcoor.push([i,j]);
+              } else {
+                Ecoor.push([i,j]);
+              }
+            }
+          }
+      };
+      
+      //to make maze based on Maze Array values.
+      function makeMaze(){
+        document.getElementById('point').innerHTML = "Point: ";
+        Mcoor = [];
+        Bcoor = [];
+        Dcoor = [];
+        Jcoor = [];
+        Ecoor = [];
+        Points = 0;
+        findALL();
+        plotMaze(Mcoor,"M");
+        plotMaze(Bcoor,"#");
+        plotMaze(Dcoor,"$");
+        plotMaze(Jcoor,"J");
+        plotMaze(Ecoor," ");
+      };
+      
+      //add $ to point if J eats a D
+      function ifDollar(){
+        for(i=0;i<Dcoor.length;i++){
+          var Dx = Dcoor[i][0];
+          var Dy = Dcoor[i][1];
+          if(Jcoor[0][0]===Dx&&Jcoor[0][1]===Dy){
+            $("#point").append(" $ ");
+            Dcoor[i]=[];
+            Points++;
+          }
+        }
+      };
+      
+      function ifWin(){
+          var Mx = Mcoor[0][0];
+          var My = Mcoor[0][1];
+          if(Jcoor[0][0]===Mx&&Jcoor[0][1]===My){
+            plotMaze(Mcoor,"");
+            plotMaze(Bcoor," ");
+            plotMaze(Dcoor," ");
+            Jcoor = [];
+            Mcoor = [];
+            Bcoor = [];
+            Dcoor = [];
+            Ecoor = [];
+            var winCoor = ['YOU WIN!!!',
+                           'CONGRATZ! ',
+                           '          ',
+                           'YOU HAVE  ',
+                            Points.toString(),
+                           'POINTS    ',
+                           '        ^^'];
+            for(i=1;i<=10;i++){
+              for(j=1;j<=10;j++){
+                var Msg = winCoor[i-1].charAt(j-1);
+                var coor = '#'+i+'x>#'+j+'c';  
+                $(coor).html(Msg);
+              }
+            }
+          }
+      };
+      
+      
+      
+      //Movement of J
+      function moveRight() {
+        x=Jcoor[0][0];
+        y=Jcoor[0][1];
+        var ending = '#'+x+'x>#'+(y+1)+'c';
+        if(y<10&&$(ending).html()!="#") {        
+            plotMaze([[x,y]]," ");
+            plotMaze([[x,y+1]],"J");
+            Jcoor[0]=[x,y+1];
+        }
+        ifDollar();
+            ifWin();
+      }
+      
+      function moveLeft() {
+        x=Jcoor[0][0];
+        y=Jcoor[0][1];
+        var ending = '#'+x+'x>#'+(y-1)+'c';
+        if(y>1&&$(ending).html()!="#") {    
+            plotMaze([[x,y]]," ");
+            plotMaze([[x,y-1]],"J");
+            Jcoor[0]=[x,y-1];
+        }
+        ifDollar();
+            ifWin();
+      }
+      
+      function moveUp() {
+        x=Jcoor[0][0];
+        y=Jcoor[0][1];
+        var ending = '#'+(x-1)+'x>#'+(y)+'c';
+        if(x>1&&$(ending).html()!="#") {    
+            plotMaze([[x,y]]," ");
+            plotMaze([[x-1,y]],"J");
+            Jcoor[0]=[x-1,y];
+        }
+        ifDollar();
+            ifWin();
+      }
+       
+      
+      function moveDown() {
+        x=Jcoor[0][0];
+        y=Jcoor[0][1];
+        var ending = '#'+(x+1)+'x>#'+(y)+'c';
+        if(x<10&&$(ending).html()!="#") {   
+            plotMaze([[x,y]]," ");
+            plotMaze([[x+1,y]],"J");
+            Jcoor[0]=[x+1,y];
+        }
+        ifDollar();
+            ifWin();
+      }
+      
+      //Randomize Maze;
+      function randomMaze() {
+        var done = false;
+        while(!done) {
+          J=1;
+          M=1;
+          B=3;
+          D=3;
+          maze=["","","","","","","","","",""];
+          
+          for(i=0;i<10;i++){
+            for(j=0;j<10;j++){
+              var prob = Math.floor((Math.random() * 100) + 1);
+              if(prob<(1+J)&&J!=0){
+                maze[i]+="J";
+                J--;
+              } else if (prob<(1+J+M)&&M!=0){
+                maze[i]+="M";
+                M--;
+              } else if (prob<(1+J+M+B)&&B!=0){
+                maze[i]+="#";
+                B--;
+              } else if (prob<(1+J+M+B+D)&&D!=0){
+                maze[i]+="$";
+                D--;
+              } else {
+                maze[i]+=" ";
+              }
+            }
+          }
+          if(J===0&&M===0&&B===0&&D===0){
+            done = true;
+          }
+        }
+        makeMaze();
+      };
+      
+      //execute movement when arrow key is pressed
+      $(document).ready(function(){
+        $("body").keydown(function(e){
+        // left arrow
+            if ((e.keyCode || e.which) == 37){   
+        // do something
+              moveLeft();
+            }
+        // right arrow
+            if ((e.keyCode || e.which) == 39){
+                moveRight();
+            }
+        // up arrow
+            if ((e.keyCode || e.which) == 38){
+                moveUp();
+            }   
+        // down arrow
+            if ((e.keyCode || e.which) == 40){
+                moveDown();
+            }
+        })
+      });
+      
+      
+      //AI maze bot
+      function AI() {        
+        var Mx=Mcoor[0][0];
+        var My=Mcoor[0][1];
+        var Jx=Jcoor[0][0];
+        var Jy=Jcoor[0][1];
+        var xDist = Mx-Jx;
+        var yDist = My-Jy;
+        
+        console.log(xDist+','+yDist);
+        
+        
+        if(xDist>0){
+          AutoMove(moveDown,xDist);      
+        } else if(xDist<0){
+          AutoMove(moveUp,xDist*-1);            
+        }        
+        
+        if(yDist>0){
+          AutoMove(moveRight,yDist);
+        } else if(yDist<0){
+          AutoMove(moveLeft,yDist*-1); 
+        }
+        
+      };
+      
+      function AutoMove(callback,num) {
+        var x=Math.abs(num)*1000+200;
+        var myvar= setInterval(function(){
+                        callback();
+                    },1000);
+        
+        setTimeout(function(){
+          clearInterval(myvar)},x);
+                               
+      }
+      
+      function getSurround() {
+        var Mx=Mcoor[0][0];
+        var My=Mcoor[0][1];
+        var Jx=Jcoor[0][0];
+        var Jy=Jcoor[0][1];
+        var Down = $('#'+(Jx+1)+'x>#'+Jy+'c').html();
+        var Up = $('#'+(Jx-1)+'x>#'+Jy+'c').html();
+        var Right = $('#'+Jx+'x>#'+(Jy+1)+'c').html();
+        var Left = $('#'+Jx+'x>#'+(Jy-1)+'c').html();
+        var surround = '';
+        
+        if(Up==="$"||Up==="M"||Up===" "){
+            surround+= " ";
+        } else {
+            surround+="#"
+        }
+        
+        if(Right==="$"||Right==="M"||Right===" "){
+            surround+= " ";
+        } else {
+            surround+="#"
+        }
+        
+        if(Down==="$"||Down==="M"||Down===" "){
+            surround+= " ";
+        } else {
+            surround+="#"
+        }
+        
+        if(Left==="$"||Left==="M"||Left===" "){
+            surround+= " ";
+        } else {
+            surround+="#"
+        }
+        
+        console.log(surround);
+        return surround;
+      }
+      
+      function AIx() {
+        var Mx=Mcoor[0][0];
+        var My=Mcoor[0][1];
+        var Jx=Jcoor[0][0];
+        var Jy=Jcoor[0][1];
+        var xDist = Mx-Jx;
+        var yDist = My-Jy;
+        
+        while(xDist!=0){
+          Mx=Mcoor[0][0];
+          My=Mcoor[0][1];
+          Jx=Jcoor[0][0];
+          Jy=Jcoor[0][1];
+          xDist = Mx-Jx;
+          yDist = My-Jy;
+          
+          var sur = getSurround();        
+          
+          if(xDist>0){
+            if(sur.charAt(2)==" ") {
+                moveDown();
+            } else if (sur.charAt(1)=="#"&&sur.charAt(3)=="#") {
+                moveUp();
+                moveLeft();
+                moveLeft();
+                moveDown();
+                moveRight();
+                moveRight();
+                moveDown();
+            } else if (sur.charAt(1)=="#") {
+                moveLeft();
+                moveDown();
+            } else if (sur.charAt(3)=="#") {
+                moveRight();
+                moveDown();
+            } else {
+                moveRight();
+                moveDown()
+            }
+          } else if(xDist<0){
+                if(sur.charAt(0)==" ") {
+                    moveUp();
+            } else if (sur.charAt(1)=="#"&&sur.charAt(3)=="#") {
+                moveDown();
+                moveLeft();
+                moveLeft();
+                moveUp();
+                moveRight();
+                moveRight();
+                moveUp();
+            } else if (sur.charAt(1)=="#") {
+                    moveLeft();
+                    moveUp();
+            } else if (sur.charAt(3)=="#") {
+                    moveRight();
+                    moveUp();
+            } else {
+                moveRight();
+                moveUp();
+            }
+          }
+        }
+      }
+      
+      function AIy() {
+        var Mx=Mcoor[0][0];
+        var My=Mcoor[0][1];
+        var Jx=Jcoor[0][0];
+        var Jy=Jcoor[0][1];
+        var xDist = Mx-Jx;
+        var yDist = My-Jy;
+        
+        while(yDist!=0){
+          Mx=Mcoor[0][0];
+          My=Mcoor[0][1];
+          Jx=Jcoor[0][0];
+          Jy=Jcoor[0][1];
+          xDist = Mx-Jx;
+          yDist = My-Jy;
+          
+          var sur = getSurround();        
+          
+          if(yDist>0){
+            if(sur.charAt(1)==" ") {
+                moveRight();
+            } else if (sur.charAt(0)=="#"&&sur.charAt(2)=="#") {
+                moveLeft();
+                moveUp();
+                moveUp();
+                moveRight();
+                moveDown();
+                moveDown();
+                moveRight();
+            } else if (sur.charAt(0)=="#") {
+                moveDown();
+                moveRight();
+            } else if (sur.charAt(2)=="#") {
+                moveUp();
+                moveRight();
+            } else {
+                moveUp();
+                moveRight();
+            }
+          } else if(yDist<0){
+                if(sur.charAt(3)==" ") {
+                    moveLeft();
+            } else if (sur.charAt(0)=="#"&&sur.charAt(2)=="#") {
+                moveRight();
+                moveUp();
+                moveUp();
+                moveLeft();
+                moveDown();
+                moveDown();
+                moveLeft();
+            } else if (sur.charAt(0)=="#") {
+                    moveDown();
+                    moveLeft();
+            } else if (sur.charAt(2)=="#") {
+                    moveUp();
+                    moveLeft();
+            } else {
+                    moveUp();
+                    moveLeft();
+            }
+          }
+        }
+      }
+      
+      function AI2() {        
+        while(Jcoor.length!=0){
+          AIx();
+          AIy();
+        }
+        
+      }
+     
+      
+      
+      
+      
+      
+    </script>
+  </head>
+  <body>    
+    <div align="center"><p onclick="makeMaze()"><font size="3px" color="white">Start!</font></p></div>
+    <div align="center" top-margin="-10px"><p onclick="randomMaze()"><font size="3px" color="white">Randomize!</font></p></div>
+    <div align="center" top-margin="-10px"><p onclick="AI2()"><font size="3px" color="white">Try AI!</font></p></div>
+    <p id='point'>Point: </p>
+    <table border="1" style="width:275px" bgcolor="Pink">
+      <tr id='1x'>
+        <td id='1c'>U</td>
+        <td id='2c'>S</td>
+        <td id='3c'>E</td>
+        <td id='4c'></td>
+        <td id='5c'>A</td>
+        <td id='6c'>R</td>
+        <td id='7c'>R</td>
+        <td id='8c'>O</td>
+        <td id='9c'>W</td>
+        <td id='10c'></td>
+      </tr>
+      <tr id='2x'>
+        <td id='1c'>K</td>
+        <td id='2c'>E</td>
+        <td id='3c'>Y</td>
+        <td id='4c'></td>
+        <td id='5c'>T</td>
+        <td id='6c'>O</td>
+        <td id='7c'></td>
+        <td id='8c'></td>
+        <td id='9c'></td>
+        <td id='10c'></td>
+      </tr>
+      <tr id='3x'>
+        <td id='1c'>M</td>
+        <td id='2c'>O</td>
+        <td id='3c'>V</td>
+        <td id='4c'>E</td>
+        <td id='5c'></td>
+        <td id='6c'>"</td>
+        <td id='7c'>J</td>
+        <td id='8c'>"</td>
+        <td id='9c'></td>
+        <td id='10c'></td>
+      </tr>
+      <tr id='4x'>
+        <td id='1c'></td>
+        <td id='2c'></td>
+        <td id='3c'></td>
+        <td id='4c'></td>
+        <td id='5c'></td>
+        <td id='6c'></td>
+        <td id='7c'></td>
+        <td id='8c'></td>
+        <td id='9c'></td>
+        <td id='10c'></td>
+      </tr>
+      <tr id='5x'>
+        <td id='1c'></td>
+        <td id='2c'></td>
+        <td id='3c'></td>
+        <td id='4c'></td>
+        <td id='5c'></td>
+        <td id='6c'></td>
+        <td id='7c'></td>
+        <td id='8c'></td>
+        <td id='9c'></td>
+        <td id='10c'></td>
+      </tr>
+      <tr id='6x'>
+        <td id='1c'></td>
+        <td id='2c'></td>
+        <td id='3c'></td>
+        <td id='4c'></td>
+        <td id='5c'></td>
+        <td id='6c'></td>
+        <td id='7c'></td>
+        <td id='8c'></td>
+        <td id='9c'></td>
+        <td id='10c'></td>
+      </tr>
+      <tr id='7x'>
+        <td id='1c'></td>
+        <td id='2c'></td>
+        <td id='3c'></td>
+        <td id='4c'></td>
+        <td id='5c'></td>
+        <td id='6c'></td>
+        <td id='7c'></td>
+        <td id='8c'></td>
+        <td id='9c'></td>
+        <td id='10c'></td>
+      </tr>
+      <tr id='8x'>
+        <td id='1c'></td>
+        <td id='2c'></td>
+        <td id='3c'></td>
+        <td id='4c'></td>
+        <td id='5c'></td>
+        <td id='6c'></td>
+        <td id='7c'></td>
+        <td id='8c'></td>
+        <td id='9c'></td>
+        <td id='10c'></td>
+      </tr>
+      <tr id='9x'>
+        <td id='1c'></td>
+        <td id='2c'></td>
+        <td id='3c'></td>
+        <td id='4c'></td>
+        <td id='5c'></td>
+        <td id='6c'></td>
+        <td id='7c'></td>
+        <td id='8c'></td>
+        <td id='9c'></td>
+        <td id='10c'></td>
+      </tr>
+      <tr id='10x'>
+        <td id='1c'></td>
+        <td id='2c'></td>
+        <td id='3c'></td>
+        <td id='4c'></td>
+        <td id='5c'></td>
+        <td id='6c'></td>
+        <td id='7c'></td>
+        <td id='8c'></td>
+        <td id='9c'></td>
+        <td id='10c'></td>
+      </tr>
+    </table>
+    
+    
+    <script>
+      
+        
+        
+      
+    </script>
+   
+    
+  </body>
+</html>
